@@ -95,18 +95,19 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('trabajadores', TrabajadorController::class)
             ->parameters(['trabajadores' => 'trabajador']);
 
-        Route::resource('valoraciones', ValoracionController::class)
-            ->only(['index', 'destroy'])
-            ->names([
-                'index'   => 'admin.valoraciones.index',
-                'destroy' => 'admin.valoraciones.destroy',
-            ]);
     });
 
-/*
+    /*
 |--------------------------------------------------------------------------
-| Valoraciones públicas
+| Gestión de productos (SOLO ADMIN)
 |--------------------------------------------------------------------------
 */
-Route::resource('valoraciones', ValoracionController::class)
-    ->parameters(['valoraciones' => 'valoracion']);
+Route::middleware(['auth', 'role:admin'])
+    ->resource('productos', ProductoController::class)
+    ->except(['show']);
+
+
+
+    Route::middleware(['auth', 'role:admin'])
+    ->resource('categorias', CategoriaProductoController::class)
+    ->except(['show']);

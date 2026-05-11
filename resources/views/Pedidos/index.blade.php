@@ -5,30 +5,35 @@
     <div class="max-w-7xl mx-auto px-6 space-y-6">
 
         {{--  Volver al panel --}}
-        <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center">
+        
             <a href="{{ route('comercial.dashboard') }}"
                class="text-orange-600 hover:text-orange-700 font-semibold">
                ← Volver al Panel
             </a>
 
-        </div>
+        
         {{--  Título --}}
         <h3 class="text-5xl font-extrabold text-orange-600 text-center tracking-wide drop-shadow-md">
             Gestión de Pedidos
         </h3>
         
         {{--  Nuevo Pedido (ICONO) --}}
-            <a href="{{ route('pedidos.create') }}"
-               class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl shadow flex items-center"
-               title="Nuevo Pedido">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                     class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-            </a>
+            <div class="flex justify-start mb-6">
+                {{-- Nuevo Pedido --}}
+                <a href="{{ route('pedidos.create') }}"
+                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl shadow flex items-center gap-2"
+                title="Crear Pedido">
 
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+
+                    Crear Pedido
+                </a>
+            </div>
 
 
         {{--  FILTROS --}}
@@ -59,7 +64,7 @@
 
                         <option value="">Todos</option>
                         <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                        <option value="entregado" {{ request('estado') == 'entregado' ? 'selected' : '' }}>Entregado</option>
+                        <option value="enviado" {{ request('estado') == 'enviado' ? 'selected' : '' }}>Enviado</option>
                         <option value="cancelado" {{ request('estado') == 'cancelado' ? 'selected' : '' }}>Cancelado</option>
 
                     </select>
@@ -100,9 +105,8 @@
                     <tr class="bg-orange-100 text-left text-gray-700 uppercase text-sm tracking-wide">
                         <th class="px-3 py-2">Número</th>
                         <th class="px-3 py-2">Cliente</th>
-                        <th class="px-3 py-2">Productos</th>
                         <th class="px-3 py-2">Total</th>
-                        <th class="px-3 py-2">Fecha</th>
+                        <th class="px-3 py-2">Fecha Creación</th>
                         <th class="px-3 py-2">Comercial</th>
                         <th class="px-3 py-2">Estado</th>
                         <th class="px-3 py-2 text-center">Acciones</th>
@@ -120,20 +124,12 @@
                             <span class="text-xs text-gray-500">{{ $pedido->cliente->razon_social }}</span>
                         </td>
 
-                        <td class="px-2 py-1 leading-tight">
-                            <ul class="list-disc list-inside text-sm">
-                                @foreach($pedido->productos as $producto)
-                                    <li>{{ $producto->nombre }} ({{ $producto->pivot->cantidad }})</li>
-                                @endforeach
-                            </ul>
-                        </td>
-
                         <td class="px-2 py-1 leading-tight font-semibold">
                             {{ number_format($pedido->total, 2, ',', '.') }} €
                         </td>
 
                         <td class="px-2 py-1 leading-tight">
-                            {{ \Carbon\Carbon::parse($pedido->fecha)->format('d/m/Y') }}
+                            {{ $pedido->created_at->format('d/m/Y H:i') }}
                         </td>
 
                         <td class="px-2 py-1 leading-tight">

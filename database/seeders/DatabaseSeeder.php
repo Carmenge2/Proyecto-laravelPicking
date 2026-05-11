@@ -65,21 +65,6 @@ class DatabaseSeeder extends Seeder
                 $pedido->update(['total' => $total]);
             }
 
-            // Crear entre 1 y 3 valoraciones para el cliente, sin relación a productos
-            for ($i = 0; $i < rand(1, 3); $i++) {
-                Valoracion::factory()->create([
-                    'cliente_id'  => $cliente->id,         // Asociar valoración al cliente
-                    'valoracion'  => rand(1, 5),           // Puntuación aleatoria entre 1 y 5
-                    'comentario' => fake()->randomElement([ // Comentario aleatorio
-                        'Excelente servicio, muy contento con el producto.',
-                        'La calidad es inmejorable, pero el envío tardó más de lo esperado.',
-                        'Producto acorde a lo esperado, aunque la atención al cliente podría mejorar.',
-                        'Me ha encantado el producto, superó mis expectativas.',
-                        'Buen servicio, aunque tuve problemas con la entrega.',
-                    ]),
-
-                ]);
-            }
         });
 
         $this->call(CatalogoSeeder::class);

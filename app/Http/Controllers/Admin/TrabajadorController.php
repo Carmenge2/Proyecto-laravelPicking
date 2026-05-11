@@ -9,16 +9,11 @@ use Illuminate\Validation\Rule;
 
 class TrabajadorController extends Controller
 {
-    // Mostrar listado de trabajadores con rol 'comercial', con búsqueda y paginación
+    // LISTADO
     public function index(Request $request)
     {
-        // Definimos los roles a filtrar (solo 'comercial')
-        $roles = ['comercial'];
+        $query = User::where('rol', 'comercial');
 
-        // Construimos la consulta base para obtener usuarios con esos roles
-        $query = User::whereIn('rol', $roles);
-
-        // Si se envía parámetro de búsqueda, filtramos usuarios por nombre o email que coincidan parcialmente
         if ($search = $request->input('search')) {
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -26,100 +21,73 @@ class TrabajadorController extends Controller
             });
         }
 
-        // Ejecutamos la consulta, ordenamos por fecha de creación descendente, paginamos de 10 en 10,
-        // y mantenemos el parámetro 'search' en la paginación
         $trabajadores = $query
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->appends($request->only('search'));
 
-        // Retornamos la vista con la variable $trabajadores
         return view('admin.trabajadores.index', compact('trabajadores'));
     }
 
-    // Mostrar formulario para crear nuevo trabajador
+    // FORMULARIO CREAR
     public function create()
     {
-        // Definimos la lista de roles disponibles (solo 'comercial')
-        $roles = ['comercial' => 'Comercial'];
-        return view('admin.trabajadores.create', compact('roles'));
+        return view('admin.trabajadores.create');
     }
 
-    // Guardar nuevo trabajador validando datos
+    // GUARDAR
     public function store(Request $request)
     {
-        // Validamos datos recibidos del formulario
         $data = $request->validate([
-            'name'     => 'required|string|max:200',
-            'email'    => 'required|email|unique:users,email', // email único en tabla users
-            'rol'      => ['required', Rule::in(['comercial'])], // rol debe ser 'comercial'
-            'password' => 'required|min:3|confirmed', // password confirmado (campo password_confirmation)
+            'name'  => 'required|string|max:200',
+            'email' => 'required|email|unique:users,email',
         ]);
 
-        // Creamos nuevo usuario con los datos validados y encriptamos la contraseña
         User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
-            'rol'      => $data['rol'],
-            'password' => bcrypt($data['password']),
+            'rol'      => 'comercial', // 🔥 fijo
+            'password' => bcrypt('123'), // 🔥 contraseña por defecto
         ]);
 
-        // Redireccionamos al listado con mensaje de éxito
         return redirect()->route('admin.trabajadores.index')
-                         ->with('success', 'Comercial creado.');
+                         ->with('success', 'Comercial creado correctamente.');
     }
 
-    // Mostrar información detallada de un trabajador específico
+    // VER
     public function show(User $trabajador)
     {
         return view('admin.trabajadores.show', compact('trabajador'));
     }
 
-    // Mostrar formulario para editar un trabajador
+    // FORMULARIO EDITAR
     public function edit(User $trabajador)
     {
-        // Lista de roles disponibles (solo 'comercial')
-        $roles = ['comercial' => 'Comercial'];
-        return view('admin.trabajadores.edit', compact('trabajador', 'roles'));
+        return view('admin.trabajadores.edit', compact('trabajador'));
     }
 
-    // Actualizar datos del trabajador validando la información
+    // ACTUALIZAR
     public function update(Request $request, User $trabajador)
     {
-        // Validamos datos, para email ignoramos el email actual del trabajador para permitir mantenerlo
         $data = $request->validate([
-            'name'     => 'required|string|max:200',
-            'email'    => ['required', 'email', Rule::unique('users', 'email')->ignore($trabajador->id)],
-            'rol'      => ['required', Rule::in(['comercial'])],
-            'password' => 'nullable|min:3|confirmed', // password es opcional para actualizar
+            'name'  => 'required|string|max:200',
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($trabajador->id)],
         ]);
 
-        // Actualizamos los datos básicos
-        $trabajador->fill([
+        $trabajador->update([
             'name'  => $data['name'],
             'email' => $data['email'],
-            'rol'   => $data['rol'],
         ]);
 
-        // Si se proporciona password nuevo, se encripta y actualiza
-        if (!empty($data['password'])) {
-            $trabajador->password = bcrypt($data['password']);
-        }
-
-        // Guardamos cambios en base de datos
-        $trabajador->save();
-
-        // Redireccionamos al listado con mensaje de éxito
         return redirect()->route('admin.trabajadores.index')
-                         ->with('success', 'Comercial actualizado.');
+                         ->with('success', 'Comercial actualizado correctamente.');
     }
 
-    // Eliminar un trabajador de la base de datos
+    // ELIMINAR
     public function destroy(User $trabajador)
     {
         $trabajador->delete();
 
-        // Redireccionamos al listado con mensaje de éxito
         return redirect()->route('admin.trabajadores.index')
                          ->with('success', 'Comercial eliminado correctamente.');
     }

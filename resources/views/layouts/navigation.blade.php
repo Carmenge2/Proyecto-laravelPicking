@@ -4,7 +4,7 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center">
+                <div class="shrink-0 flex items-center scale-150">
                     <a href="{{ route('dashboard') }}">
                 {{-- Logo personalizado: imagen de logo_picking --}}
                 <img 

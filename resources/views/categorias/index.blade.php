@@ -8,6 +8,7 @@
             Categorías
         </h1>
 
+        </div>
         {{-- MENSAJE SI NO HAY CATEGORÍAS --}}
         @if($categorias->isEmpty())
             <p class="text-center text-gray-500">

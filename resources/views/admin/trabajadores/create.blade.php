@@ -41,32 +41,6 @@
                    class="w-full border border-orange-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
           </div>
 
-          <div class="m-5">
-            <label class="block text-gray-700 font-medium">Rol *</label>
-            <select name="rol"
-                    class="w-full border border-orange-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
-              @foreach($roles as $key => $label)
-                <option value="{{ $key }}"
-                  {{ old('rol') === $key ? 'selected' : '' }}>
-                  {{ $label }}
-                </option>
-              @endforeach
-            </select>
-          </div>
-
-          <div class="m-5">
-            <label class="block text-gray-700 font-medium">Contraseña *</label>
-            <input type="password" name="password"
-                   class="w-full border border-orange-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
-          </div>
-
-          <div class="m-5">
-            <label class="block text-gray-700 font-medium">Repetir contraseña *</label>
-            <input type="password" name="password_confirmation"
-                   class="w-full border border-orange-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
-          </div>
-        </div>
-
         <div class="mt-6 m-5 p-4 flex space-x-4">
           <button type="submit"
                   class="bg-orange-400 hover:bg-orange-500 text-white font-semibold px-6 py-2 rounded-lg shadow">

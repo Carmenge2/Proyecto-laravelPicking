@@ -4,16 +4,52 @@
 <div class="py-12 bg-orange-50 min-h-screen">
     <div class="max-w-7xl mx-auto px-6">
 
-        <h1 class="text-5xl font-extrabold text-orange-600 text-center mb-12">
+            {{--  Volver al panel --}}
+        <div >
+            <a href="{{ route('admin.dashboard') }}"
+               class="text-orange-600 hover:text-orange-700 font-semibold">
+               ← Volver al Panel
+            </a>
+        </div>
+        <!-- TÍTULO -->
+        <h1 class="text-5xl font-extrabold text-orange-600 text-center mb-6">
             Categorías
         </h1>
 
+        
+
+        <!-- BOTÓN NUEVA CATEGORÍA (SOLO ADMIN) -->
+        @auth
+            @if(auth()->user()->rol === 'admin')
+                <div class="flex justify-center mb-10">
+                    <a href="{{ route('categorias.create') }}"
+                       class="inline-flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 
+                              text-white font-bold rounded-xl shadow-lg transition transform hover:scale-105">
+                        
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none"
+                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12 4v16m8-8H4" />
+                        </svg>
+
+                        Nueva categoría
+                    </a>
+
+                    
+                </div>
+            @endif
+        @endauth
+
+        
+
+        <!-- MENSAJE SI NO HAY CATEGORÍAS -->
         @if($categorias->isEmpty())
             <p class="text-center text-gray-500">
                 No hay categorías registradas.
             </p>
         @endif
 
+        <!-- GRID DE CATEGORÍAS -->
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-10 justify-items-center">
             @foreach ($categorias as $categoria)
 

@@ -17,6 +17,7 @@ class Producto extends Model
         'precio',
         'stock',
         'estado', // disponible, agotado, pre-venta
+        'categoria_id',
         'imagen',
     ];
 
@@ -35,10 +36,6 @@ class Producto extends Model
         return $this->belongsTo(CategoriasProductos::class, 'categoria_id');
     }
 
-    public function getRouteKeyName()
-{
-    return 'slug';
-}
 
 
 
