@@ -6,8 +6,23 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Middleware personalizado de redirección basada en roles.
+ * Redirige automáticamente a cada usuario a su dashboard según su rol
+ * y restringe el acceso a rutas no permitidas.
+ */
 class RedirectBasedOnRole
 {
+    /**
+     * Maneja la petición HTTP verificando el rol del usuario autenticado.
+     * Si la ruta es /dashboard, redirige al panel correspondiente.
+     * Si se especifican roles permitidos, deniega el acceso a roles no listados.
+     *
+     * @param Request $request
+     * @param Closure $next
+     * @param string|null $roles Roles permitidos separados por | o ,
+     * @return Response
+     */
     public function handle(Request $request, Closure $next, ?string $roles = null): Response
     {
         // Si es la ruta genérica "dashboard"

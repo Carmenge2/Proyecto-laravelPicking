@@ -1,64 +1,36 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-orange-50 py-12">
+<div class="py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-    {{-- VOLVER --}}
-    <div class="max-w-5xl mx-auto px-2 mb-6">
-        <a href="{{ route('pedidos.index') }}"
-           class="text-orange-600 hover:text-orange-700 font-semibold">
-            ← Volver a Pedidos
-        </a>
-    </div>
+        <x-ui.back-link :href="route('pedidos.index')" label="Volver a Pedidos"/>
 
-    <div class="max-w-6xl mx-auto px-2">
+        <x-ui.card>
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Editar Pedido #{{ $pedido->id }}</h1>
 
-        {{-- TÍTULO --}}
-        <h1 class="text-4xl font-extrabold text-orange-600 text-center mb-8">
-            Editar Pedido {{ $pedido->id }}
-        </h1>
-
-        {{-- TARJETA --}}
-        <div class="bg-white shadow-xl rounded-2xl p-8">
-
-            {{-- ERRORES --}}
             @if ($errors->any())
-                <div class="mb-6 bg-red-100 border border-red-300 text-red-700 p-2 rounded-xl">
-                    <strong>Completa correctamente el formulario.</strong>
-                </div>
+                <x-ui.alert type="error" class="mb-6">
+                    Completa correctamente el formulario.
+                </x-ui.alert>
             @endif
 
             <form action="{{ route('pedidos.update', $pedido) }}" method="POST">
                 @csrf
                 @method('PUT')
 
-                {{-- CLIENTE --}}
-                <div class="mb-6">
-                    <label class="block text-orange-700 font-semibold mb-2">
-                        Cliente *
-                    </label>
+                <x-ui.form-select name="cliente_id" label="Cliente" :required="true">
+                    <option value="">-- Selecciona cliente --</option>
+                    @foreach($clientes as $cliente)
+                        <option value="{{ $cliente->id }}" {{ old('cliente_id', $pedido->cliente_id) == $cliente->id ? 'selected' : '' }}>
+                            {{ $cliente->nombre_comercial }}
+                        </option>
+                    @endforeach
+                </x-ui.form-select>
 
-                    <select name="cliente_id"
-                            class="w-full border border-orange-300 rounded-xl px-2 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400">
-
-                        <option value="">-- Selecciona cliente --</option>
-
-                        @foreach($clientes as $cliente)
-                            <option value="{{ $cliente->id }}"
-                                {{ old('cliente_id', $pedido->cliente_id) == $cliente->id ? 'selected' : '' }}>
-                                {{ $cliente->nombre_comercial }}
-                            </option>
-                        @endforeach
-
-                    </select>
-                </div>
-
-                {{-- PRODUCTOS --}}
-                <div class="mb-6">
-
-                    <label class="block text-orange-700 font-semibold mb-3">
-                        Productos *
-                    </label>
+                {{-- Productos --}}
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Productos <span class="text-red-500">*</span></label>
 
                     @php
                         $productosSeleccionados = old('productos', $pedido->productos->mapWithKeys(function($p) {
@@ -67,172 +39,85 @@
                     @endphp
 
                     @foreach($categorias as $categoria)
-
-                        <details open class="mb-4 border border-orange-200 rounded-xl overflow-hidden">
-
-                            <summary class="cursor-pointer px-2 py-3 bg-orange-100 font-bold text-orange-700">
+                        <details open class="mb-3 border border-orange-200 rounded-xl overflow-hidden">
+                            <summary class="cursor-pointer px-4 py-3 bg-orange-50 font-medium text-sm text-gray-800 hover:bg-orange-100 transition">
                                 {{ $categoria->nombre }}
                             </summary>
-
-                            <div class="p-3 bg-white space-y-2">
-
+                            <div class="p-4 space-y-2">
                                 @forelse($categoria->productos as $producto)
-
                                     @php
                                         $cantidad = $productosSeleccionados[$producto->id]['cantidad'] ?? 0;
                                         $agotado = $producto->estado === 'agotado';
                                     @endphp
-
-                                    <div class="flex justify-between items-center bg-orange-50 border border-orange-100 rounded-xl px-2 py-3">
-
-                                        <div class="{{ $agotado ? 'line-through opacity-50' : '' }}">
-                                            <p class="font-semibold text-gray-800">
-                                                {{ $producto->nombre }}
-                                            </p>
-
-                                            <p class="text-sm text-orange-500">
-                                                {{ number_format($producto->precio,2) }}€
-                                                — {{ ucfirst($producto->estado) }}
-                                            </p>
+                                    <div class="flex justify-between items-center bg-gray-50 rounded-lg px-4 py-2.5">
+                                        <div class="{{ $agotado ? 'line-through text-gray-400' : 'text-sm text-gray-800' }}">
+                                            {{ $producto->nombre }}
+                                            <span class="text-xs text-gray-500 ml-1">
+                                                ({{ number_format($producto->precio, 2) }}€ · {{ ucfirst($producto->estado) }})
+                                            </span>
                                         </div>
-
                                         @if(!$agotado)
-
-                                            <input
-                                                type="number"
-                                                name="productos[{{ $producto->id }}][cantidad]"
-                                                min="0"
-                                                value="{{ $cantidad }}"
-                                                data-precio="{{ $producto->precio }}"
-                                                class="w-24 border border-orange-300 rounded-lg px-3 py-2 cantidad-input focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                            >
-
+                                            <input type="number"
+                                                   name="productos[{{ $producto->id }}][cantidad]"
+                                                   min="0"
+                                                   value="{{ $cantidad }}"
+                                                   data-precio="{{ $producto->precio }}"
+                                                   class="w-20 border border-orange-200 rounded-lg px-3 py-1.5 text-sm text-center focus:ring-2 focus:ring-orange-400 focus:border-orange-400 cantidad-input">
                                         @endif
-
                                     </div>
-
                                 @empty
-
-                                    <p class="text-orange-500 px-2 py-2">
-                                        Sin productos
-                                    </p>
-
+                                    <p class="text-sm text-gray-500">Sin productos</p>
                                 @endforelse
-
                             </div>
-
                         </details>
-
                     @endforeach
-
                 </div>
 
-                {{-- TOTAL --}}
-                <div class="mb-8">
-
-                    <div class="bg-orange-50 border border-orange-100 rounded-xl px-6 py-5">
-
-                        <p class="text-lg font-semibold text-orange-700">
-                            Total del pedido
-                        </p>
-
-                        <p class="text-3xl font-extrabold text-orange-600 mt-1">
-                            <span id="totalPedido">0.00</span> €
-                        </p>
-
-                    </div>
-
+                {{-- Total --}}
+                <div class="bg-orange-50 rounded-xl px-4 py-3 mb-5 flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-700">Total del pedido</span>
+                    <span class="text-lg font-bold text-orange-600"><span id="totalPedido">0.00</span> €</span>
                 </div>
 
-                {{-- FECHA --}}
-                <div class="mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <x-ui.form-input name="fecha" label="Fecha de Entrega" type="date" :value="$pedido->fecha" :required="true"/>
 
-                    <label class="block text-orange-700 font-semibold mb-2">
-                        Fecha de Entrega *
-                    </label>
-
-                    <input type="date"
-                           name="fecha"
-                           min="{{ date('Y-m-d') }}"
-                           value="{{ old('fecha', $pedido->fecha) }}"
-                           class="w-full border border-orange-300 rounded-xl px-2 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400">
-
-                </div>
-
-                {{-- ESTADO --}}
-                <div class="mb-8">
-
-                    <label class="block text-orange-700 font-semibold mb-2">
-                        Estado *
-                    </label>
-
-                    <select name="estado"
-                            class="w-full border border-orange-300 rounded-xl px-2 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400">
-
+                    <x-ui.form-select name="estado" label="Estado" :required="true">
                         @foreach(['pendiente','enviado','cancelado'] as $estado)
-
-                            <option value="{{ $estado }}"
-                                {{ old('estado', $pedido->estado) == $estado ? 'selected' : '' }}>
+                            <option value="{{ $estado }}" {{ old('estado', $pedido->estado) == $estado ? 'selected' : '' }}>
                                 {{ ucfirst($estado) }}
                             </option>
-
                         @endforeach
-
-                    </select>
-
+                    </x-ui.form-select>
                 </div>
 
-                {{-- BOTONES --}}
-                <div class="flex justify-between items-center">
-
-                    <a href="{{ route('pedidos.index') }}"
-                       class="text-orange-600 hover:text-orange-700 font-semibold">
-                        ← Cancelar
-                    </a>
-
-                    <button type="submit"
-                            class="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg transition">
-                        Actualizar Pedido
-                    </button>
-
+                <div class="flex items-center gap-3 pt-4">
+                    <x-ui.button type="submit">Actualizar Pedido</x-ui.button>
+                    <x-ui.button variant="secondary" href="{{ route('pedidos.index') }}">Cancelar</x-ui.button>
                 </div>
-
             </form>
-
-        </div>
+        </x-ui.card>
 
     </div>
 </div>
+@endsection
 
-{{-- SCRIPT TOTAL --}}
+@push('scripts')
 <script>
 function actualizarTotal() {
-
     let total = 0;
-
     document.querySelectorAll('.cantidad-input').forEach(input => {
-
         const precio = parseFloat(input.dataset.precio || 0);
         const cantidad = parseInt(input.value || 0);
-
-        if (cantidad > 0) {
-            total += precio * cantidad;
-        }
-
+        if (cantidad > 0) total += precio * cantidad;
     });
-
     document.getElementById('totalPedido').textContent = total.toFixed(2);
 }
 
 document.addEventListener('input', function(e) {
-
-    if (e.target.classList.contains('cantidad-input')) {
-        actualizarTotal();
-    }
-
+    if (e.target.classList.contains('cantidad-input')) actualizarTotal();
 });
 
 window.addEventListener('DOMContentLoaded', actualizarTotal);
 </script>
-
-@endsection
+@endpush

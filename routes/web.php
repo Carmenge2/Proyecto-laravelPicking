@@ -1,9 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ComercialController;
-use App\Http\Controllers\ValoracionController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -31,29 +28,30 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 */
 Route::get('/dashboard', fn () => view('dashboard'))
-    ->middleware('auth')
+    ->middleware(['auth', 'role'])
     ->name('dashboard');
 
 /*
-| 
 |--------------------------------------------------------------------------
-| CATÁLOGO DE PRODUCTOS (PÚBLICO)
+| CATÁLOGO DE PRODUCTOS (requiere autenticación)
 |--------------------------------------------------------------------------
 */
 
-Route::get('/catalogo', [CategoriaProductoController::class, 'index'])
-    ->name('catalogo.index');
+Route::middleware('auth')->group(function () {
+    Route::get('/catalogo', [CategoriaProductoController::class, 'index'])
+        ->name('catalogo.index');
 
-Route::get('/catalogo/producto/{producto}', [ProductoController::class, 'showPublico'])
-    ->name('catalogo.producto');
+    Route::get('/catalogo/producto/{producto}', [ProductoController::class, 'showPublico'])
+        ->name('catalogo.producto');
 
-Route::get('/catalogo/{categoria}', [CategoriaProductoController::class, 'productos'])
-    ->name('catalogo.productos');
+    Route::get('/catalogo/{categoria}', [CategoriaProductoController::class, 'productos'])
+        ->name('catalogo.productos');
+});
 
 
 /*
 |--------------------------------------------------------------------------
-| Panel comercial
+| Panel comercial (dashboard)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:comercial'])
@@ -63,9 +61,6 @@ Route::middleware(['auth', 'role:comercial'])
 
         Route::get('/dashboard', fn () => view('comercial.dashboard'))
             ->name('dashboard');
-
-        Route::resource('clientes', ClienteController::class);
-        Route::resource('pedidos', PedidoController::class);
     });
 
 /*
@@ -73,11 +68,10 @@ Route::middleware(['auth', 'role:comercial'])
 | Clientes y pedidos (ADMIN + COMERCIAL)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:comercial|admin'])
-    ->resource('clientes', ClienteController::class);
-
-Route::middleware(['auth', 'role:comercial|admin'])
-    ->resource('pedidos', PedidoController::class);
+Route::middleware(['auth', 'role:comercial|admin'])->group(function () {
+    Route::resource('clientes', ClienteController::class);
+    Route::resource('pedidos', PedidoController::class);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -97,17 +91,15 @@ Route::middleware(['auth', 'role:admin'])
 
     });
 
-    /*
+/*
 |--------------------------------------------------------------------------
-| Gestión de productos (SOLO ADMIN)
+| Gestión de productos y categorías (SOLO ADMIN)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:admin'])
     ->resource('productos', ProductoController::class)
     ->except(['show']);
 
-
-
-    Route::middleware(['auth', 'role:admin'])
+Route::middleware(['auth', 'role:admin'])
     ->resource('categorias', CategoriaProductoController::class)
     ->except(['show']);

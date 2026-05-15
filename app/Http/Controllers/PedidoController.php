@@ -4,14 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\Pedido;
 use App\Models\Cliente;
-use App\Models\Producto;
 use App\Models\CategoriasProductos;
+use App\Services\PedidoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Controlador de pedidos.
+ * Gestiona el ciclo completo de vida de los pedidos: listado filtrado,
+ * creación, visualización, edición y eliminación.
+ * Delega la lógica de negocio a PedidoService para mantener los
+ * controladores limpios y testables.
+ */
 class PedidoController extends Controller
 {
-    // LISTADO
+    public function __construct(
+        protected PedidoService $pedidoService
+    ) {}
+
+    /**
+     * Muestra el listado paginado de pedidos con filtros.
+     * Permite filtrar por nombre del cliente, fecha de entrega y estado.
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
         $query = Pedido::with(['cliente', 'productos', 'comercial'])
@@ -34,17 +51,22 @@ class PedidoController extends Controller
             $query->where('estado', $request->estado);
         }
 
-        $pedidos = $query->paginate(10)->appends($request->all());
+        $pedidos = $query->paginate(10)->appends($request->only(['search', 'fecha', 'estado']));
 
         return view('pedidos.index', compact('pedidos'));
     }
 
-    // FORMULARIO CREAR
+    /**
+     * Muestra el formulario para crear un nuevo pedido.
+     * Carga todos los clientes y categorías con sus productos asociados.
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
         $clientes = Cliente::orderBy('nombre_comercial')->get();
 
-        // 🔥 TODAS las categorías con TODOS los productos
+        // Todas las categorías con todos los productos para la selección en el formulario
         $categorias = CategoriasProductos::with(['productos' => function ($q) {
             $q->orderBy('nombre');
         }])->orderBy('nombre')->get();
@@ -52,22 +74,18 @@ class PedidoController extends Controller
         return view('pedidos.create', compact('clientes', 'categorias'));
     }
 
-    // GUARDAR PEDIDO
+    /**
+     * Valida los datos, filtra productos seleccionados, calcula el total
+     * desde la base de datos y almacena el nuevo pedido con sus líneas.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'productos'  => 'required|array',
-            'productos.*.cantidad' => 'nullable|integer|min:0',
-            'fecha'      => 'required|date',
-            'estado'     => 'required|in:pendiente,enviado,cancelado',
-        ]);
+        $data = $request->validate($this->rules());
 
-        $productosSeleccionados = collect($data['productos'])
-            ->filter(fn($p) => isset($p['cantidad']) && $p['cantidad'] > 0)
-            ->mapWithKeys(fn($p, $id) => [
-                (int)$id => ['cantidad' => $p['cantidad']]
-            ]);
+        $productosSeleccionados = $this->pedidoService->filtrarProductos($data['productos']);
 
         if ($productosSeleccionados->isEmpty()) {
             return back()->withErrors([
@@ -75,14 +93,7 @@ class PedidoController extends Controller
             ])->withInput();
         }
 
-        $productosDB = Producto::whereIn('id', $productosSeleccionados->keys())->get();
-
-        $total = 0;
-
-        foreach ($productosDB as $producto) {
-            $cantidad = $productosSeleccionados[$producto->id]['cantidad'];
-            $total += $producto->precio * $cantidad;
-        }
+        $total = $this->pedidoService->calcularTotal($productosSeleccionados);
 
         $pedido = Pedido::create([
             'cliente_id'   => $data['cliente_id'],
@@ -98,17 +109,33 @@ class PedidoController extends Controller
             ->with('success', 'Pedido creado correctamente.');
     }
 
-    // VER PEDIDO
+    /**
+     * Muestra el detalle de un pedido específico.
+     * Autorizado vía PedidoPolicy.
+     *
+     * @param Pedido $pedido
+     * @return \Illuminate\View\View
+     */
     public function show(Pedido $pedido)
     {
+        $this->authorize('view', $pedido);
+
         $pedido->load(['cliente', 'productos', 'comercial']);
 
         return view('pedidos.show', compact('pedido'));
     }
 
-    // FORMULARIO EDITAR
+    /**
+     * Muestra el formulario para editar un pedido existente.
+     * Autorizado vía PedidoPolicy.
+     *
+     * @param Pedido $pedido
+     * @return \Illuminate\View\View
+     */
     public function edit(Pedido $pedido)
     {
+        $this->authorize('update', $pedido);
+
         $clientes = Cliente::orderBy('nombre_comercial')->get();
 
         $categorias = CategoriasProductos::with(['productos' => function ($q) {
@@ -118,22 +145,21 @@ class PedidoController extends Controller
         return view('pedidos.edit', compact('pedido', 'clientes', 'categorias'));
     }
 
-    // ACTUALIZAR PEDIDO
+    /**
+     * Valida los datos, recalcula el total y actualiza el pedido.
+     * Reemplaza las líneas de producto mediante sync().
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, Pedido $pedido)
     {
-        $data = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'productos'  => 'required|array',
-            'productos.*.cantidad' => 'nullable|integer|min:0',
-            'fecha'      => 'required|date',
-            'estado'     => 'required|in:pendiente,enviado,cancelado',
-        ]);
+        $this->authorize('update', $pedido);
 
-        $productosSeleccionados = collect($data['productos'])
-            ->filter(fn($p) => isset($p['cantidad']) && $p['cantidad'] > 0)
-            ->mapWithKeys(fn($p, $id) => [
-                (int)$id => ['cantidad' => $p['cantidad']]
-            ]);
+        $data = $request->validate($this->rules());
+
+        $productosSeleccionados = $this->pedidoService->filtrarProductos($data['productos']);
 
         if ($productosSeleccionados->isEmpty()) {
             return back()->withErrors([
@@ -141,14 +167,7 @@ class PedidoController extends Controller
             ])->withInput();
         }
 
-        $productosDB = Producto::whereIn('id', $productosSeleccionados->keys())->get();
-
-        $total = 0;
-
-        foreach ($productosDB as $producto) {
-            $cantidad = $productosSeleccionados[$producto->id]['cantidad'];
-            $total += $producto->precio * $cantidad;
-        }
+        $total = $this->pedidoService->calcularTotal($productosSeleccionados);
 
         $pedido->update([
             'cliente_id'   => $data['cliente_id'],
@@ -164,12 +183,36 @@ class PedidoController extends Controller
             ->with('success', 'Pedido actualizado correctamente.');
     }
 
-    // ELIMINAR
+    /**
+     * Elimina un pedido del sistema.
+     * Autorizado vía PedidoPolicy.
+     *
+     * @param Pedido $pedido
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Pedido $pedido)
     {
+        $this->authorize('delete', $pedido);
+
         $pedido->delete();
 
         return redirect()->route('pedidos.index')
             ->with('success', 'Pedido eliminado correctamente.');
+    }
+
+    /**
+     * Reglas de validación comunes para la creación y edición de pedidos.
+     *
+     * @return array<string, string>
+     */
+    private function rules(): array
+    {
+        return [
+            'cliente_id'           => 'required|exists:clientes,id',
+            'productos'            => 'required|array',
+            'productos.*.cantidad' => 'nullable|integer|min:0',
+            'fecha'                => 'required|date',
+            'estado'               => 'required|in:pendiente,enviado,cancelado',
+        ];
     }
 }

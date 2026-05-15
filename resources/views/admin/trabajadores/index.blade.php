@@ -1,101 +1,68 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12 bg-orange-50 min-h-screen">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+<div class="py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-    {{-- Enlace volver al panel --}}
-    <div class="flex justify-between items-center bg-white p-6 rounded-xl shadow">
-      <div>
-        <a href="{{ route('admin.dashboard') }}"
-           class="inline-block text-orange-500 hover:underline font-medium">
-          ← Volver al Panel
-        </a>
-      </div>
-    </div>
+        {{-- Cabecera --}}
+        <x-ui.page-header title="Comerciales" actionLabel="Nuevo Comercial" :actionRoute="route('admin.trabajadores.create')"/>
 
-    {{-- Header + botón Nuevo --}}
-    <div class="flex justify-between items-center bg-white p-6 rounded-xl shadow">
-      <h1 class="text-2xl font-semibold text-gray-800">Comerciales</h1>
-      <a href="{{ route('admin.trabajadores.create') }}"
-         class="bg-orange-400 hover:bg-orange-500 text-white font-semibold px-5 py-2 rounded-lg shadow">
-        + Nuevo Comercial
-      </a>
-    </div>
-
-    {{-- Filtro por nombre completo / correo --}}
-    <div class="bg-white p-6 rounded-xl shadow">
-      <form action="{{ route('admin.trabajadores.index') }}"
-            method="GET"
-            class="flex flex-wrap gap-4 items-end">
-
-        <div class="flex-1 min-w-[200px]">
-          <label for="search" class="block text-gray-600 font-medium mb-1">Buscar Comercial</label>
-          <input type="text"
-                 name="search"
-                 id="search"
-                 value="{{ request('search') }}"
-                 placeholder="Nombre completo o email"
-                 class="w-full border border-orange-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
-        </div>
-
-        <div class="flex space-x-2">
-          <button type="submit"
-                  class="bg-orange-400 hover:bg-orange-500 text-white font-semibold px-5 py-2 rounded-lg shadow">
-            Buscar
-          </button>
-          <a href="{{ route('admin.trabajadores.index') }}"
-             class="bg-orange-300 hover:bg-orange-400 text-white font-semibold px-5 py-2 rounded-lg shadow">
-            Limpiar
-          </a>
-        </div>
-      </form>
-    </div>
-
-{{-- Tabla --}}
-<div class="bg-white p-6 rounded-xl shadow overflow-x-auto">
-  <table class="min-w-full table-auto">
-    <thead>
-      <tr class="bg-orange-100 text-left text-gray-800">
-        <th class="px-4 py-2">Número Comercial</th>
-        <th class="px-4 py-2">Nombre</th>
-        <th class="px-4 py-2">Email</th>
-        <th class="px-4 py-2">Rol</th>
-        <th class="px-4 py-2">Acciones</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-orange-100">
-      @foreach($trabajadores as $t)
-        <tr class="hover:bg-orange-50">
-          <td class="px-4 py-3">{{ $t->id }}</td>
-          <td class="px-6 py-4">{{ $t->name }}</td>
-          <td class="px-4 py-3">{{ $t->email }}</td>
-          <td class="px-4 py-3">{{ ucfirst($t->rol) }}</td>
-          <td class="px-4 py-3 space-x-2">
-            <a href="{{ route('admin.trabajadores.edit', $t) }}"
-               class="text-blue-400 hover:underline">Editar</a>
-            <form action="{{ route('admin.trabajadores.destroy', $t) }}"
-                  method="POST" class="inline">
-              @csrf @method('DELETE')
-              <button type="submit"
-                      class="text-red-600 hover:underline"
-                      onclick="return confirm('¿Borrar este trabajador?')">
-                Borrar
-              </button>
+        {{-- Filtro --}}
+        <x-ui.card>
+            <form action="{{ route('admin.trabajadores.index') }}" method="GET" class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[250px]">
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1.5">Buscar</label>
+                    <input type="text" name="search" id="search" value="{{ request('search') }}"
+                           placeholder="Nombre o email"
+                           class="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition">
+                </div>
+                <div class="flex gap-2">
+                    <x-ui.button type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"/>
+                        </svg>
+                        Buscar
+                    </x-ui.button>
+                    <x-ui.button variant="secondary" href="{{ route('admin.trabajadores.index') }}">Limpiar</x-ui.button>
+                </div>
             </form>
-          </td>
-        </tr>
-      @endforeach
-        </tbody>
-      </table>
+        </x-ui.card>
 
-      {{-- Paginación --}}
-      <div class="mt-4">
-        {{ $trabajadores->links() }}
-      </div>
+        {{-- Tabla --}}
+        @if($trabajadores->isEmpty())
+            <x-ui.card>
+                <x-ui.empty-state message="No hay comerciales registrados." actionLabel="Crear Comercial" :actionRoute="route('admin.trabajadores.create')"/>
+            </x-ui.card>
+        @else
+            <x-ui.table :headers="['ID', 'Nombre', 'Email', 'Rol', 'Acciones']">
+                @foreach($trabajadores as $t)
+                    <tr class="hover:bg-orange-50/50 transition">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $t->id }}</td>
+                        <td class="px-4 py-3 text-sm font-semibold text-gray-800">{{ $t->name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ $t->email }}</td>
+                        <td class="px-4 py-3">
+                            <x-ui.badge type="{{ $t->rol }}">{{ ucfirst($t->rol) }}</x-ui.badge>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('admin.trabajadores.edit', $t) }}" class="text-blue-500 hover:text-blue-700 transition" title="Editar" aria-label="Editar comercial">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/>
+                                    </svg>
+                                </a>
+                                <x-ui.confirm-delete :action="route('admin.trabajadores.destroy', $t)"/>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+
+                <x-slot name="pagination">
+                    {{ $trabajadores->appends(request()->only('search'))->links() }}
+                </x-slot>
+            </x-ui.table>
+        @endif
+
     </div>
-
-  </div>
 </div>
 @endsection
 

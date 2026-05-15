@@ -52,9 +52,12 @@ class CatalogoSeeder extends Seeder
 
             foreach ($productos as $nombreProducto) {
                 Producto::create([
-                    'nombre' => $nombreProducto,
+                    'nombre'       => $nombreProducto,
                     'categoria_id' => $categoria->id,
-                    'imagen' => null,
+                    'precio'       => fake()->randomFloat(2, 0.50, 50.00),
+                    'stock'        => fake()->numberBetween(10, 200),
+                    'estado'       => 'disponible',
+                    'imagen'       => null,
                 ]);
             }
         }

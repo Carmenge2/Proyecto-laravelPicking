@@ -33,15 +33,6 @@ class Cliente extends Model
     }
 
     /**
-     * Relación uno a muchos: un cliente puede tener muchas valoraciones
-     * Define la relación con el modelo Valoracion
-     */
-    public function valoraciones()
-    {
-        return $this->hasMany(Valoracion::class);
-    }
-
-    /**
      * Relación inversa: un cliente pertenece a un comercial (usuario)
      * 'comercial_id' es la llave foránea en esta tabla
      */

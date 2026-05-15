@@ -5,12 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * Modelo de producto.
+ * Representa un artículo del catálogo con nombre, precio, stock, estado
+ * e imagen. Pertenece a una categoría y puede aparecer en múltiples pedidos.
+ */
 class Producto extends Model
 {
     use HasFactory;
 
+    /** @var string Nombre de la tabla asociada. */
     protected $table = 'productos';
 
+    /**
+     * Atributos permitidos para asignación masiva.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'nombre',
         'descripcion',
@@ -22,7 +33,9 @@ class Producto extends Model
     ];
 
     /**
-     * Relación con pedidos (un producto puede estar en muchos pedidos)
+     * Relación N:M — un producto puede estar en varios pedidos.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function pedidos()
     {
@@ -30,7 +43,12 @@ class Producto extends Model
                     ->withPivot('cantidad')
                     ->withTimestamps();
     }
-   // RELACIÓN: un producto pertenece a una categoría
+
+    /**
+     * Relación N:1 — un producto pertenece a una categoría.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function categoria()
     {
         return $this->belongsTo(CategoriasProductos::class, 'categoria_id');

@@ -1,138 +1,75 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-10 bg-orange-50 min-h-screen">
+<div class="py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-    {{-- VOLVER --}}
-    <div class="max-w-7xl mx-auto mb-6 px-6">
-        <a href="{{ route('catalogo.index') }}"
-           class="text-orange-600 hover:text-orange-700 font-semibold">
-            ← Volver a categorías
-        </a>
-    </div>
+        <x-ui.back-link :href="route('catalogo.index')" label="Volver a categorías"/>
 
-    {{-- TÍTULO --}}
-    <h1 class="text-5xl font-extrabold text-orange-600 text-center mb-6">
-        {{ $categoriaSeleccionada->nombre }}
-    </h1>
+        {{-- Header --}}
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <h1 class="text-2xl font-bold text-gray-900">{{ $categoriaSeleccionada->nombre }}</h1>
 
-    {{-- BOTONES (ADMIN) --}}
-    @auth
-        @if(auth()->user()->rol === 'admin')
-            <div class="max-w-7xl mx-auto px-6 mb-6 flex justify-between items-center">
-
-                {{-- IZQUIERDA --}}
-                <div class="flex gap-4">
-                    <a href="{{ route('categorias.edit', $categoriaSeleccionada->id) }}"
-                       class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg shadow">
+            @if(Auth::user()->rol === 'admin')
+                <div class="flex flex-wrap items-center gap-2">
+                    <x-ui.button href="{{ route('productos.create', ['categoria_id' => $categoriaSeleccionada->id]) }}">
+                        + Agregar Producto
+                    </x-ui.button>
+                    <x-ui.button variant="secondary" href="{{ route('categorias.edit', $categoriaSeleccionada->id) }}">
                         Editar Categoría
-                    </a>
-
-                    <form action="{{ route('categorias.destroy', $categoriaSeleccionada->id) }}"
-                          method="POST"
-                          onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow">
-                            Eliminar Categoría
-                        </button>
-                    </form>
+                    </x-ui.button>
+                    <x-ui.confirm-delete :action="route('categorias.destroy', $categoriaSeleccionada->id)" label="Eliminar Categoría"/>
                 </div>
+            @endif
+        </div>
 
-                {{-- DERECHA (AÑADIR PRODUCTO) --}}
-                <a href="{{ route('productos.create', ['categoria_id' => $categoriaSeleccionada->id]) }}"
-                   class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg shadow">
-                    + Agregar Producto al catálogo
-                </a>
+        {{-- Product Grid --}}
+        @if($productos->isEmpty())
+            <x-ui.card>
+                <x-ui.empty-state message="No hay productos en esta categoría."
+                    actionLabel="Agregar Producto"
+                    :actionRoute="route('productos.create', ['categoria_id' => $categoriaSeleccionada->id])"/>
+            </x-ui.card>
+        @else
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @foreach($productos as $producto)
+                    <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col hover:shadow-md hover:-translate-y-0.5 transition">
 
-            </div>
-        @endif
-    @endauth
+                        <a href="{{ route('catalogo.producto', $producto->id) }}" class="block">
+                            @if($producto->imagen)
+                                <img src="{{ asset('storage/'.$producto->imagen) }}"
+                                     alt="{{ $producto->nombre }}"
+                                     class="w-full h-44 object-cover">
+                            @else
+                                <div class="w-full h-44 bg-orange-50 flex items-center justify-center">
+                                    <span class="text-orange-400 text-sm font-medium">Sin imagen</span>
+                                </div>
+                            @endif
 
-    {{-- GRID --}}
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-
-            @forelse($productos as $producto)
-
-                <div class="bg-white shadow-lg rounded-2xl overflow-hidden flex flex-col justify-between">
-
-                    {{-- ZONA CLICABLE --}}
-                    <a href="{{ route('catalogo.producto', $producto->id) }}"
-                       class="block hover:shadow-2xl hover:-translate-y-1 transition duration-300">
-
-                        {{-- IMAGEN --}}
-                        @if($producto->imagen)
-                            <img src="{{ asset('storage/'.$producto->imagen) }}"
-                                 class="w-full h-52 object-cover">
-                        @else
-                            <div class="w-full h-52 bg-orange-100 flex items-center justify-center">
-                                <span class="text-orange-600 font-semibold">
-                                    Sin imagen
-                                </span>
+                            <div class="p-4">
+                                <h3 class="font-semibold text-gray-900 mb-1">{{ $producto->nombre }}</h3>
+                                <p class="text-lg font-bold text-gray-900">{{ number_format($producto->precio, 2) }} €</p>
+                                <div class="mt-2">
+                                    <x-ui.badge type="{{ $producto->estado }}">{{ ucfirst($producto->estado) }}</x-ui.badge>
+                                </div>
                             </div>
-                        @endif
+                        </a>
 
-                        {{-- CONTENIDO --}}
-                        <div class="p-5">
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">
-                                {{ $producto->nombre }}
-                            </h3>
-
-                            <p class="text-2xl font-extrabold text-gray-900">
-                                {{ number_format($producto->precio, 2) }} €
-                            </p>
-
-                            {{-- ESTADO --}}
-                            <span class="
-                                inline-block mt-3 px-3 py-1 text-xs font-bold rounded-full
-                                @if($producto->estado === 'disponible') bg-green-100 text-green-700
-                                @elseif($producto->estado === 'agotado') bg-red-100 text-red-700
-                                @else bg-yellow-100 text-yellow-700 @endif
-                            ">
-                                {{ ucfirst($producto->estado) }}
-                            </span>
-                        </div>
-
-                    </a>
-
-                    {{-- BOTONES ADMIN --}}
-                    @auth
-                        @if(auth()->user()->rol === 'admin')
-                            <div class="p-4 flex gap-2">
-
+                        @if(Auth::user()->rol === 'admin')
+                            <div class="px-4 pb-4 pt-0 flex gap-2 mt-auto">
                                 <a href="{{ route('productos.edit', $producto->id) }}"
-                                   class="w-full text-center bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg text-sm">
+                                   class="flex-1 text-center text-sm font-medium px-3 py-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition">
                                     Editar
                                 </a>
-
-                                <form action="{{ route('productos.destroy', $producto->id) }}"
-                                      method="POST" class="w-full">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button type="submit"
-                                            onclick="return confirm('¿Eliminar producto?')"
-                                            class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg text-sm">
-                                        Eliminar
-                                    </button>
-                                </form>
-
+                                <x-ui.confirm-delete :action="route('productos.destroy', $producto->id)"/>
                             </div>
                         @endif
-                    @endauth
 
-                </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
 
-            @empty
-                <p class="col-span-full text-center text-gray-500 text-lg">
-                    No hay productos en esta categoría.
-                </p>
-            @endforelse
-
-        </div>
     </div>
-
 </div>
 @endsection

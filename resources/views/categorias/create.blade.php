@@ -1,49 +1,30 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12 bg-orange-50 min-h-screen">
+<div class="py-8">
+    <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-    {{-- 🔥 VOLVER FUERA DEL RECUADRO --}}
-    <div class="max-w-xl mx-auto mb-4">
-        <a href="{{ route('catalogo.index') }}"
-           class="text-orange-600 hover:text-orange-700 font-semibold">
-           ← Volver a categorías
-        </a>
-    </div>
-        <h2 class="text-2xl font-bold mb-6 text-center text-orange-600">
-            Nueva Categoría
-        </h2>
-    {{-- 🔲 RECUADRO --}}
-    <div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow">
+        <x-ui.back-link :href="route('catalogo.index')" label="Volver a categorías"/>
 
+        <x-ui.card>
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Nueva Categoría</h1>
 
-        <form action="{{ route('categorias.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+            <form action="{{ route('categorias.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
 
-            <!-- Nombre -->
-            <div class="mb-4">
-                <label class="font-semibold">Nombre *</label>
-                <input type="text" name="nombre"
-                       class="w-full border rounded px-3 py-2 mt-1">
-                @error('nombre')
-                    <p class="text-red-600 text-sm">{{ $message }}</p>
-                @enderror
-            </div>
+                <x-ui.form-input name="nombre" label="Nombre" :required="true"/>
 
-            <!-- Imagen -->
-            <div class="mb-4">
-                <label class="font-semibold">Imagen</label>
-                <input type="file" name="imagen" class="mt-1">
-            </div>
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Imagen</label>
+                    <input type="file" name="imagen" class="text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 transition">
+                </div>
 
-            <!-- Botón -->
-            <div class="text-center">
-                <button class="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600">
-                    Crear categoría
-                </button>
-            </div>
-
-        </form>
+                <div class="flex items-center gap-3 pt-4">
+                    <x-ui.button type="submit">Crear Categoría</x-ui.button>
+                    <x-ui.button variant="secondary" href="{{ route('catalogo.index') }}">Cancelar</x-ui.button>
+                </div>
+            </form>
+        </x-ui.card>
 
     </div>
 </div>

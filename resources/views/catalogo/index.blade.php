@@ -1,86 +1,44 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12 bg-orange-50 min-h-screen">
-    <div class="max-w-7xl mx-auto px-6">
+<div class="py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-            {{--  Volver al panel --}}
-        <div >
-            <a href="{{ route('admin.dashboard') }}"
-               class="text-orange-600 hover:text-orange-700 font-semibold">
-               ← Volver al Panel
-            </a>
-        </div>
-        <!-- TÍTULO -->
-        <h1 class="text-5xl font-extrabold text-orange-600 text-center mb-6">
-            Categorías
-        </h1>
-
-        
-
-        <!-- BOTÓN NUEVA CATEGORÍA (SOLO ADMIN) -->
-        @auth
-            @if(auth()->user()->rol === 'admin')
-                <div class="flex justify-center mb-10">
-                    <a href="{{ route('categorias.create') }}"
-                       class="inline-flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 
-                              text-white font-bold rounded-xl shadow-lg transition transform hover:scale-105">
-                        
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M12 4v16m8-8H4" />
-                        </svg>
-
-                        Nueva categoría
-                    </a>
-
-                    
-                </div>
-            @endif
-        @endauth
-
-        
-
-        <!-- MENSAJE SI NO HAY CATEGORÍAS -->
-        @if($categorias->isEmpty())
-            <p class="text-center text-gray-500">
-                No hay categorías registradas.
-            </p>
+        @if(Auth::user()->rol === 'admin')
+            <x-ui.page-header title="Catálogo" actionLabel="Nueva Categoría" :actionRoute="route('categorias.create')"/>
+        @else
+            <x-ui.page-header title="Catálogo"/>
         @endif
 
-        <!-- GRID DE CATEGORÍAS -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-10 justify-items-center">
-            @foreach ($categorias as $categoria)
+        @if($categorias->isEmpty())
+            <x-ui.card>
+                <x-ui.empty-state message="No hay categorías de productos." actionLabel="Crear Categoría" :actionRoute="route('categorias.create')"/>
+            </x-ui.card>
+        @else
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                @foreach($categorias as $categoria)
+                    <a href="{{ route('catalogo.productos', $categoria->id) }}"
+                       class="group flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition">
 
-                <a href="{{ route('catalogo.productos', $categoria->id) }}"
-                   class="group flex flex-col items-center">
+                        <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-orange-100 group-hover:border-orange-300 transition mb-3">
+                            @if($categoria->imagen)
+                                <img src="{{ asset('storage/'.$categoria->imagen) }}"
+                                     alt="{{ $categoria->nombre }}"
+                                     class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full bg-orange-50 flex items-center justify-center text-orange-400 text-xl font-bold">
+                                    {{ strtoupper(substr($categoria->nombre, 0, 1)) }}
+                                </div>
+                            @endif
+                        </div>
 
-                    <div class="w-36 h-36 rounded-full overflow-hidden shadow-lg
-                                border-4 border-orange-200
-                                group-hover:scale-105 transition duration-300">
-
-                        @if($categoria->imagen)
-                            <img src="{{ asset('storage/'.$categoria->imagen) }}"
-                                 alt="{{ $categoria->nombre }}"
-                                 class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full flex items-center justify-center
-                                        bg-orange-100 text-orange-600 font-bold text-lg">
-                                {{ strtoupper(substr($categoria->nombre, 0, 1)) }}
-                            </div>
-                        @endif
-                    </div>
-
-                    <p class="mt-4 text-lg font-semibold text-gray-800
-                              group-hover:text-orange-600 transition">
-                        {{ $categoria->nombre }}
-                    </p>
-
-                </a>
-
-            @endforeach
-        </div>
+                        <p class="text-sm font-medium text-gray-800 group-hover:text-orange-600 transition text-center">
+                            {{ $categoria->nombre }}
+                        </p>
+                    </a>
+                @endforeach
+            </div>
+        @endif
 
     </div>
 </div>

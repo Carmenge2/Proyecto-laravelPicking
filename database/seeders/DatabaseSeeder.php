@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\Pedido;
-use App\Models\Valoracion;
 
 class DatabaseSeeder extends Seeder
 {

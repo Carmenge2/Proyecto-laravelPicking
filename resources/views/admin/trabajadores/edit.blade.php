@@ -1,59 +1,34 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-orange-50 py-12">
-  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="bg-white rounded-2xl shadow-lg p-8 border border-orange-200">
+<div class="py-8">
+    <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-      {{-- Enlace volver al panel --}}
-      <div class="mb-6 p-3">
-        <a href="{{ route('admin.dashboard') }}"
-           class="inline-block text-orange-600 hover:underline font-medium">
-          ← Volver al Panel
-        </a>
-      </div>
+        <x-ui.back-link :href="route('admin.trabajadores.index')" label="Volver a Comerciales"/>
 
-      <h1 class="text-3xl font-semibold mb-6 text-orange-800 text-center p-6">
-        Editar Comercial {{ $trabajador->id }}
-      </h1>
+        <x-ui.card>
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Editar Comercial</h1>
 
-      @if ($errors->any())
-        <div class="bg-orange-100 border border-orange-300 text-orange-800 rounded-lg p-4 mb-6">
-          <h5 class="font-semibold">Completa correctamente el formulario.</h5>
-        </div>
-      @endif
+            @if ($errors->any())
+                <x-ui.alert type="error" class="mb-6">
+                    Completa correctamente el formulario.
+                </x-ui.alert>
+            @endif
 
-      <form action="{{ route('admin.trabajadores.update', $trabajador) }}" method="POST">
-        @csrf
-        @method('PUT')
+            <form action="{{ route('admin.trabajadores.update', $trabajador) }}" method="POST">
+                @csrf
+                @method('PUT')
 
-        <div class="grid grid-cols-1 gap-4">
-          <div class="m-5">
-            <label class="block text-gray-700 font-medium">Nombre completo *</label>
-            <input type="text" name="name"
-                   value="{{ old('name', $trabajador->name) }}"
-                   class="w-full border border-orange-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
-          </div>
+                <x-ui.form-input name="name" label="Nombre completo" :value="$trabajador->name" :required="true"/>
+                <x-ui.form-input name="email" label="Email" type="email" :value="$trabajador->email" :required="true"/>
 
-          <div class="m-5">
-            <label class="block text-gray-700 font-medium">Email *</label>
-            <input type="email" name="email"
-                   value="{{ old('email', $trabajador->email) }}"
-                   class="w-full border border-orange-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
-          </div>
+                <div class="flex items-center gap-3 pt-4">
+                    <x-ui.button type="submit">Actualizar</x-ui.button>
+                    <x-ui.button variant="secondary" href="{{ route('admin.trabajadores.index') }}">Cancelar</x-ui.button>
+                </div>
+            </form>
+        </x-ui.card>
 
-        <div class="mt-6 m-5 p-4 flex space-x-4">
-          <button type="submit"
-                  class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-lg transition shadow">
-            Actualizar
-          </button>
-          <a href="{{ route('admin.trabajadores.index') }}"
-             class="bg-orange-200 hover:bg-orange-300 text-orange-900 font-semibold py-2 px-6 rounded-lg transition shadow">
-            Cancelar
-          </a>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 @endsection

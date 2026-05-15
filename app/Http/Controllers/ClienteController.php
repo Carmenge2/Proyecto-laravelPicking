@@ -55,15 +55,7 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'nombre_comercial' => 'required|string|max:255',
-            'razon_social'     => 'required|string|max:255',
-            'email'            => 'nullable|email|max:255',
-            'direccion' => 'nullable|string|max:255',
-            'telefono'         => 'nullable|string|max:50',
-            'tipo_negocio'     => 'nullable|string',
-            'comercial_id'     => 'exists:users,id',
-        ]);
+        $data = $request->validate($this->rules());
 
         // Si es comercial, asigna automáticamente el comercial logueado
         if (Auth::user()->rol === 'comercial') {
@@ -82,6 +74,8 @@ class ClienteController extends Controller
      */
     public function show(Cliente $cliente)
     {
+        $this->authorize('view', $cliente);
+
         return view('clientes.show', compact('cliente'));
     }
 
@@ -90,6 +84,8 @@ class ClienteController extends Controller
      */
     public function edit(Cliente $cliente)
     {
+        $this->authorize('update', $cliente);
+
         return view('clientes.edit', compact('cliente'));
     }
 
@@ -98,15 +94,9 @@ class ClienteController extends Controller
      */
     public function update(Request $request, Cliente $cliente)
     {
-        $data = $request->validate([
-            'nombre_comercial' => 'required|string|max:255',
-            'razon_social'     => 'required|string|max:255',
-            'email'            => 'nullable|email|max:255',
-            'direccion' => 'nullable|string|max:255',
-            'telefono'         => 'nullable|string|max:50',
-            'tipo_negocio'     => 'nullable|string',
-            'comercial_id'     => 'exists:users,id',
-        ]);
+        $this->authorize('update', $cliente);
+
+        $data = $request->validate($this->rules());
 
         $cliente->update($data);
 
@@ -120,10 +110,30 @@ class ClienteController extends Controller
      */
     public function destroy(Cliente $cliente)
     {
+        $this->authorize('delete', $cliente);
+
         $cliente->delete();
 
         return redirect()
             ->route('clientes.index')
             ->with('success', 'Cliente eliminado correctamente.');
+    }
+
+    /**
+     * Reglas de validación comunes para la creación y edición de clientes.
+     *
+     * @return array<string, string>
+     */
+    private function rules(): array
+    {
+        return [
+            'nombre_comercial' => 'required|string|max:20',
+            'razon_social'     => 'required|string|max:20',
+            'email'            => 'nullable|email|max:30',
+            'direccion'        => 'nullable|string|max:50',
+            'telefono'         => 'nullable|string|max:9',
+            'tipo_negocio'     => 'nullable|string|max:20',
+            'comercial_id'     => 'exists:users,id',
+        ];
     }
 }

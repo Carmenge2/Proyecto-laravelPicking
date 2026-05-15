@@ -1,202 +1,93 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-10 bg-orange-50 min-h-screen">
-    <div class="max-w-7xl mx-auto px-6 space-y-6">
+<div class="py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        {{--  Volver al panel --}}
-        
-            <a href="{{ route('comercial.dashboard') }}"
-               class="text-orange-600 hover:text-orange-700 font-semibold">
-               ← Volver al Panel
-            </a>
+        {{-- Cabecera --}}
+        <x-ui.page-header title="Pedidos" actionLabel="Crear Pedido" :actionRoute="route('pedidos.create')"/>
 
-        
-        {{--  Título --}}
-        <h3 class="text-5xl font-extrabold text-orange-600 text-center tracking-wide drop-shadow-md">
-            Gestión de Pedidos
-        </h3>
-        
-        {{--  Nuevo Pedido (ICONO) --}}
-            <div class="flex justify-start mb-6">
-                {{-- Nuevo Pedido --}}
-                <a href="{{ route('pedidos.create') }}"
-                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl shadow flex items-center gap-2"
-                title="Crear Pedido">
-
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                        class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-
-                    Crear Pedido
-                </a>
-            </div>
-
-
-        {{--  FILTROS --}}
-        <div class="bg-white p-6 rounded-xl shadow">
+        {{-- Filtros --}}
+        <x-ui.card>
             <form action="{{ route('pedidos.index') }}" method="GET" class="flex flex-wrap gap-4 items-end">
-
-                {{-- Buscar por cliente --}}
-                <div class="flex-1 min-w-[240px]">
-                    <label class="text-gray-700 font-medium">Búsqueda de Cliente</label>
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Cliente</label>
                     <input type="text" name="search" value="{{ request('search') }}"
-                           class="w-full border border-orange-200 rounded-lg px-4 py-2 h-11 focus:ring-2 focus:ring-orange-400"
-                           placeholder="Nombre comercial, razón social o Código de cliente">
+                           placeholder="Nombre comercial o razón social"
+                           class="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition">
                 </div>
-
-                {{-- Fecha --}}
-                <div>
-                    <label class="text-gray-700 font-medium">Fecha de Entrega</label>
-                    <input type="date" name="fecha" value="{{ request('fecha') }}"
-                           class="w-full border border-orange-200 rounded-lg px-4 py-2 h-11 focus:ring-2 focus:ring-orange-400">
-                </div>
-
-                <!-- Filtrar por estado -->
                 <div class="min-w-[160px]">
-                    <label for="estado" class="text-gray-700 font-medium">Estado</label>
-                    <select name="estado" id="estado"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2
-                            focus:outline-none focus:ring-2 focus:ring-orange-400">
-
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Fecha entrega</label>
+                    <input type="date" name="fecha" value="{{ request('fecha') }}"
+                           class="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition">
+                </div>
+                <div class="min-w-[140px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Estado</label>
+                    <select name="estado"
+                            class="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition">
                         <option value="">Todos</option>
                         <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
                         <option value="enviado" {{ request('estado') == 'enviado' ? 'selected' : '' }}>Enviado</option>
                         <option value="cancelado" {{ request('estado') == 'cancelado' ? 'selected' : '' }}>Cancelado</option>
-
                     </select>
                 </div>
-
-
-                {{-- Botón buscar --}}
-                <button type="submit"
-                        class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow flex items-center"
-                        title="Buscar">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
-                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
-                    </svg>
-                </button>
-
-                {{-- Limpiar filtros --}}
-                <a href="{{ route('pedidos.index') }}"
-                   class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg shadow flex items-center"
-                   title="Limpiar filtros">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-6 h-6" fill="none"
-                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M3 4h18l-6 7v5l-6 4v-9L3 4z" />
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M9 9l6 6M15 9l-6 6" />
-                    </svg>
-                </a>
+                <div class="flex gap-2">
+                    <x-ui.button type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"/>
+                        </svg>
+                        Buscar
+                    </x-ui.button>
+                    <x-ui.button variant="secondary" href="{{ route('pedidos.index') }}">Limpiar</x-ui.button>
+                </div>
             </form>
-        </div>
+        </x-ui.card>
 
-        {{--  TABLA DE PEDIDOS --}}
-        <div class="bg-white p-8 rounded-xl shadow overflow-x-auto">
-            <table class="w-full table-auto border-collapse">
-                <thead>
-                    <tr class="bg-orange-100 text-left text-gray-700 uppercase text-sm tracking-wide">
-                        <th class="px-3 py-2">Número</th>
-                        <th class="px-3 py-2">Cliente</th>
-                        <th class="px-3 py-2">Total</th>
-                        <th class="px-3 py-2">Fecha Creación</th>
-                        <th class="px-3 py-2">Comercial</th>
-                        <th class="px-3 py-2">Estado</th>
-                        <th class="px-3 py-2 text-center">Acciones</th>
-                    </tr>
-                </thead>
-
-                <tbody class="divide-y divide-orange-100 text-gray-800">
-                    @foreach($pedidos as $pedido)
-                    <tr class="hover:bg-orange-50 transition">
-
-                        <td class="px-2 py-1 leading-tight">{{ $pedido->id }}</td>
-
-                        <td class="px-2 py-1 leading-tight">
-                            <span class="font-semibold">{{ $pedido->cliente->nombre_comercial }}</span><br>
-                            <span class="text-xs text-gray-500">{{ $pedido->cliente->razon_social }}</span>
+        {{-- Tabla --}}
+        @if($pedidos->isEmpty())
+            <x-ui.card>
+                <x-ui.empty-state message="No hay pedidos registrados." actionLabel="Crear Pedido" :actionRoute="route('pedidos.create')"/>
+            </x-ui.card>
+        @else
+            <x-ui.table :headers="['N.º', 'Cliente', 'Total', 'Fecha', 'Comercial', 'Estado', 'Acciones']">
+                @foreach($pedidos as $pedido)
+                    <tr class="hover:bg-orange-50/50 transition">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $pedido->id }}</td>
+                        <td class="px-4 py-3">
+                            <p class="text-sm font-semibold text-gray-800">{{ $pedido->cliente->nombre_comercial }}</p>
+                            <p class="text-xs text-gray-500">{{ $pedido->cliente->razon_social }}</p>
                         </td>
-
-                        <td class="px-2 py-1 leading-tight font-semibold">
-                            {{ number_format($pedido->total, 2, ',', '.') }} €
+                        <td class="px-4 py-3 text-sm font-semibold text-gray-900">{{ number_format($pedido->total, 2, ',', '.') }} €</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ $pedido->created_at->format('d/m/Y') }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ $pedido->comercial->name ?? '—' }}</td>
+                        <td class="px-4 py-3">
+                            <x-ui.badge type="{{ $pedido->estado }}">{{ ucfirst($pedido->estado) }}</x-ui.badge>
                         </td>
-
-                        <td class="px-2 py-1 leading-tight">
-                            {{ $pedido->created_at->format('d/m/Y H:i') }}
-                        </td>
-
-                        <td class="px-2 py-1 leading-tight">
-                            {{ $pedido->comercial->name ?? '—' }}
-                        </td>
-
-                        <td class="px-2 py-1 leading-tight">
-                            {{ ucfirst($pedido->estado) }}
-                        </td>
-
-                        {{-- ICONOS DE ACCIONES --}}
-                        <td class="px-4 py-1 flex justify-center space-x-4">
-
-                            {{-- VER --}}
-                            <a href="{{ route('pedidos.show', $pedido) }}"
-                               class="text-orange-500 hover:text-orange-700 transition"
-                               title="Ver pedido">
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                     class="w-6 h-6" fill="none"
-                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </a>
-
-                            {{-- EDITAR --}}
-                            <a href="{{ route('pedidos.edit', $pedido) }}"
-                               class="text-blue-500 hover:text-blue-700 transition"
-                               title="Editar pedido">
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                     class="w-6 h-6" fill="none"
-                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M16.862 3.487a2.25 2.25 0 113.182 3.182L7.125 19.587l-4.2.933.933-4.2L16.862 3.487z" />
-                                </svg>
-                            </a>
-
-                            {{-- BORRAR --}}
-                            <form action="{{ route('pedidos.destroy', $pedido) }}"
-                                  method="POST" onsubmit="return confirm('¿Borrar este pedido?')">
-                                @csrf @method('DELETE')
-                                <button class="text-red-600 hover:text-red-800 transition" title="Eliminar pedido">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                         class="w-6 h-6" fill="none"
-                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M6 18L18 6M6 6l12 12" />
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('pedidos.show', $pedido) }}" class="text-orange-500 hover:text-orange-700 transition" title="Ver" aria-label="Ver pedido">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     </svg>
-                                </button>
-                            </form>
-
+                                </a>
+                                <a href="{{ route('pedidos.edit', $pedido) }}" class="text-blue-500 hover:text-blue-700 transition" title="Editar" aria-label="Editar pedido">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/>
+                                    </svg>
+                                </a>
+                                <x-ui.confirm-delete :action="route('pedidos.destroy', $pedido)"/>
+                            </div>
                         </td>
-
                     </tr>
-                    @endforeach
-                </tbody>
+                @endforeach
 
-            </table>
+                <x-slot name="pagination">
+                    {{ $pedidos->appends(request()->only(['search', 'fecha', 'estado']))->links() }}
+                </x-slot>
+            </x-ui.table>
+        @endif
 
-            {{-- PAGINACIÓN --}}
-            <div class="mt-6">
-                {{ $pedidos->appends(request()->only(['search', 'fecha']))->links() }}
-            </div>
-
-        </div>
     </div>
 </div>
 @endsection

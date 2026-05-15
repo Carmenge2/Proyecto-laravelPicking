@@ -1,0 +1,21 @@
+@props(['type' => 'default'])
+
+@php
+    $styles = [
+        'pendiente' => 'bg-yellow-100 text-yellow-700',
+        'enviado' => 'bg-green-100 text-green-700',
+        'cancelado' => 'bg-red-100 text-red-700',
+        'disponible' => 'bg-green-100 text-green-700',
+        'agotado' => 'bg-red-100 text-red-700',
+        'pre-venta' => 'bg-yellow-100 text-yellow-700',
+        'admin' => 'bg-purple-100 text-purple-700',
+        'comercial' => 'bg-orange-100 text-orange-700',
+        'default' => 'bg-gray-100 text-gray-700',
+    ];
+
+    $class = $styles[$type] ?? $styles['default'];
+@endphp
+
+<span {{ $attributes->merge(['class' => "inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full $class"]) }}>
+    {{ $slot }}
+</span>
