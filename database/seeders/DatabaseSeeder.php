@@ -12,61 +12,89 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Crear un usuario admin fijo con datos definidos
-        $admin = User::factory()->create([
-            'name' => 'Carmen Gomez Estevez',            // Nombre admin
-            'email' => 'carmen@admin.com',                // Email admin
-            'rol' => 'admin',                             // Rol admin
-            'password' => bcrypt('123'),                  // Contraseña cifrada
-        ]);
+        // Admin
+        $admin = User::updateOrCreate(
+            ['email' => 'carmen@admin.com'],
+            [
+                'name' => 'Carmen Gomez Estevez',
+                'rol' => 'admin',
+                'password' => bcrypt('123'),
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // Crear 3 usuarios comerciales con rol y contraseña definida
+        // Comercial fijo
+        $raul = User::updateOrCreate(
+            ['email' => 'raul@comercial.com'],
+            [
+                'name' => 'Raul Romero',
+                'rol' => 'comercial',
+                'password' => bcrypt('123'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Comerciales aleatorios
         $comerciales = User::factory(3)->state([
-            'password' => bcrypt('123'),                  // Contraseña cifrada
-            'rol' => 'comercial',                          // Rol comercial
+            'password' => bcrypt('123'),
+            'rol' => 'comercial',
         ])->create();
 
-        // Combinar comerciales y admin en un solo array para usar después
-        $users = $comerciales->push($admin);
+        // Añadir Raul a comerciales
+        $comerciales->push($raul);
 
-        // Crear 10 productos aleatorios 
-        $productos = Producto::factory(10)->create();
+        // Productos
+        if (Producto::count() == 0) {
+            $productos = Producto::factory(10)->create();
+        } else {
+            $productos = Producto::all();
+        }
 
-        // Crear 10 clientes, y por cada uno comerciales 
-        Cliente::factory(10)->create()->each(function ($cliente) use ($comerciales, $productos) {
+        // Clientes y pedidos
+        if (Cliente::count() == 0) {
 
-            // Crear 2 pedidos por cliente
-            for ($i = 0; $i < 2; $i++) {
-                $comercial = $comerciales->random();     // Asignar comercial aleatorio
+            Cliente::factory(10)->create()->each(function ($cliente) use ($comerciales, $productos) {
 
-                $pedido = Pedido::factory()->create([
-                    'cliente_id'   => $cliente->id,       // Asociar al cliente
-                    'comercial_id' => $comercial->id,     // Asociar al comercial
-                    'estado'       => fake()->randomElement(['pendiente', 'enviado', 'cancelado']), // Estado 
-                    'total'        => 0,                   // Inicializar total en 0, se calcula después
-                ]);
+                for ($i = 0; $i < 2; $i++) {
 
-                $total = 0;
+                    $comercial = $comerciales->random();
 
-                // Seleccionar entre 1 y 4 productos aleatorios
-                $productosSeleccionados = $productos->random(rand(1, 4));
+                    $pedido = Pedido::factory()->create([
+                        'cliente_id'   => $cliente->id,
+                        'comercial_id' => $comercial->id,
+                        'estado'       => fake()->randomElement([
+                            'pendiente',
+                            'enviado',
+                            'cancelado'
+                        ]),
+                        'total'        => 0,
+                    ]);
 
-                foreach ($productosSeleccionados as $producto) {
-                    $cantidad = rand(1, 5);               // Cantidad aleatoria entre 1 y 5
-                    $subtotal = $producto->precio * $cantidad; // Calcular subtotal
-                    $total += $subtotal;                   // Acumular total
+                    $total = 0;
 
-                    // Asociar producto al pedido con cantidad (tabla pivote)
-                    $pedido->productos()->attach($producto->id, ['cantidad' => $cantidad]);
+                    $productosSeleccionados = $productos->random(rand(1, 4));
+
+                    foreach ($productosSeleccionados as $producto) {
+
+                        $cantidad = rand(1, 5);
+
+                        $subtotal = $producto->precio * $cantidad;
+
+                        $total += $subtotal;
+
+                        $pedido->productos()->attach(
+                            $producto->id,
+                            ['cantidad' => $cantidad]
+                        );
+                    }
+
+                    $pedido->update([
+                        'total' => $total
+                    ]);
                 }
-
-                // Actualizar total en el pedido
-                $pedido->update(['total' => $total]);
-            }
-
-        });
+            });
+        }
 
         $this->call(CatalogoSeeder::class);
-
     }
 }

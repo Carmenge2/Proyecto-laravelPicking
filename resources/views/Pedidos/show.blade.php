@@ -8,7 +8,7 @@
 
         <x-ui.card>
             <div class="flex items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Pedido #{{ $pedido->id }}</h1>
+                <h1 class="text-2xl font-bold text-gray-900">Pedido {{ $pedido->id }}</h1>
                 <x-ui.badge type="{{ $pedido->estado }}">{{ ucfirst($pedido->estado) }}</x-ui.badge>
             </div>
 

@@ -13,7 +13,7 @@
                         @if(Auth::user()->rol === 'admin')
                             <a href="{{ route('admin.dashboard') }}"
                                class="px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('admin.dashboard') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-700' }} transition">
-                                Dashboard
+                                Inicio
                             </a>
                             <a href="{{ route('catalogo.index') }}"
                                class="px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('catalogo.*') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-700' }} transition">
@@ -34,7 +34,7 @@
                         @else
                             <a href="{{ route('comercial.dashboard') }}"
                                class="px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('comercial.dashboard') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-700' }} transition">
-                                Dashboard
+                                Inicio
                             </a>
                             <a href="{{ route('catalogo.index') }}"
                                class="px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('catalogo.*') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-700' }} transition">

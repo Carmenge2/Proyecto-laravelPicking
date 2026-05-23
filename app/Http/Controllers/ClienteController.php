@@ -6,24 +6,31 @@ use App\Models\Cliente;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ClienteController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Mostrar listado de clientes.
      */
     public function index(Request $request)
     {
-        $query = Cliente::with('comercial') // carga el comercial asignado
+        $query = Cliente::with('comercial')
             ->orderBy('nombre_comercial')
             ->orderBy('razon_social');
 
         if ($request->filled('search')) {
+
             $search = $request->search;
+
             $query->where(function($q) use ($search) {
+
                 $q->where('nombre_comercial', 'like', "%{$search}%")
                   ->orWhere('id', $search)
                   ->orWhere('razon_social', 'like', "%{$search}%");
+
             });
         }
 
@@ -40,14 +47,25 @@ class ClienteController extends Controller
         $user = Auth::user();
 
         if ($user->rol === 'comercial') {
-            $comerciales = collect([$user->id => $user->name]);
+
+            $comerciales = collect([
+                $user->id => $user->name
+            ]);
+
             $comercialSeleccionado = $user->id;
+
         } else {
-            $comerciales = User::whereIn('rol', ['comercial', 'admin'])->pluck('name', 'id');
+
+            $comerciales = User::whereIn('rol', ['comercial', 'admin'])
+                ->pluck('name', 'id');
+
             $comercialSeleccionado = null;
         }
 
-        return view('clientes.create', compact('comerciales', 'comercialSeleccionado'));
+        return view(
+            'clientes.create',
+            compact('comerciales', 'comercialSeleccionado')
+        );
     }
 
     /**
@@ -120,13 +138,12 @@ class ClienteController extends Controller
     }
 
     /**
-     * Reglas de validación comunes para la creación y edición de clientes.
-     *
-     * @return array<string, string>
+     * Reglas de validación comunes.
      */
     private function rules(): array
     {
         return [
+
             'nombre_comercial' => 'required|string|max:20',
             'razon_social'     => 'required|string|max:20',
             'email'            => 'nullable|email|max:30',
@@ -134,6 +151,7 @@ class ClienteController extends Controller
             'telefono'         => 'nullable|string|max:9',
             'tipo_negocio'     => 'nullable|string|max:20',
             'comercial_id'     => 'exists:users,id',
+
         ];
     }
 }

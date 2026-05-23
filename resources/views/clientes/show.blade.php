@@ -9,7 +9,7 @@
         <x-ui.card>
             <div class="flex items-center justify-between mb-6">
                 <h1 class="text-2xl font-bold text-gray-900">{{ $cliente->nombre_comercial }}</h1>
-                <span class="text-sm text-gray-400">#{{ $cliente->id }}</span>
+                <span class="text-sm text-gray-400">{{ $cliente->id }}</span>
             </div>
 
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">

@@ -7,7 +7,7 @@
         <x-ui.back-link :href="route('pedidos.index')" label="Volver a Pedidos"/>
 
         <x-ui.card>
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Editar Pedido #{{ $pedido->id }}</h1>
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Editar Pedido {{ $pedido->id }}</h1>
 
             @if ($errors->any())
                 <x-ui.alert type="error" class="mb-6">
